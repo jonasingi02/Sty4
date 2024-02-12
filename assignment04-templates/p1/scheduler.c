@@ -75,10 +75,22 @@ int startThread(int threadId, int priority)
  */
 void _enqueue(Queue *queue, int tid)
 {
-    (void)queue;
-    (void)tid;
+    int priority = _threads[tid].priority;
+    QueueItem *newItem = (QueueItem *)malloc(sizeof(QueueItem));
+    if (newItem == NULL) {
+        return;
+    }
+    newItem->tid = tid;
+    newItem->next = NULL;
 
-    // TODO: Implement
+    if (queue[priority].tail != NULL) {
+        queue[priority].tail->next = newItem;
+    }
+    queue[priority].tail = newItem;
+
+    if (queue[priority].head == NULL) {
+        queue[priority].head = newItem;
+    }
 }
 
 /*
@@ -87,9 +99,18 @@ void _enqueue(Queue *queue, int tid)
  */
 int _dequeue(Queue *queue)
 {
-    (void)queue;
-
-    // TODO: Implement
+    for (int i = 0; i <= MAX_PRIORITY; i++){
+        if (queue[i].head != NULL){
+            QueueItem *firstitem = queue[i].head;
+            int tid = firstitem->tid;
+            queue[i].head = firstitem->next;
+            if (queue[i].head == NULL) {
+                queue[i].tail = NULL;
+            }
+            free(firstitem);
+            return tid;
+        }
+    }
     return -1;
 }
 
