@@ -89,7 +89,18 @@ int _dequeue(Queue *queue)
 {
     (void)queue;
 
-    // TODO: Implement
+    for (intpriority = 0; priority <= MAX_PRIORITY; ++priority) { 
+        if (queues[priority].head != NULL) { 
+            QueueItem *item = queues[priority].head; 
+            int tid = item->tid; 
+            queues[priority].head = item->next;
+            if (queues[priority].head == NULL) {
+                queues[priority].tail = NULL;
+            }
+            free(item);
+            return tid;
+            }
+        } 
     return -1;
 }
 
