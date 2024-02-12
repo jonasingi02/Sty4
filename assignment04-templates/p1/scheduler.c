@@ -49,7 +49,7 @@ typedef struct _Thread {
 
 Thread _threads[MAX_THREADS] = {{0}};
 
-Queue queue = {0};
+Queue Queues[MAX_PRIORITY];
 
 /*
  * Adds a new, waiting thread.
@@ -75,10 +75,22 @@ int startThread(int threadId, int priority)
  */
 void _enqueue(Queue *queue, int tid)
 {
-    (void)queue;
-    (void)tid;
+    int priority = _threads[tid].priority;
+    QueueItem *newItem = (QueueItem *)malloc(sizeof(QueueItem));
+    if (newItem == NULL) {
+        return;
+    }
+    newItem->tid = tid;
+    newItem->next = NULL;
 
-    // TODO: Implement
+    if (queue[priority].tail != NULL) {
+        queue[priority].tail->next = newItem;
+    }
+    queue[priority].tail = newItem;
+
+    if (queue[priority].head == NULL) {
+        queue[priority].head = newItem;
+    }
 }
 
 /*
@@ -88,14 +100,14 @@ void _enqueue(Queue *queue, int tid)
 int _dequeue(Queue *queue)
 {
     (void)queue;
-
-    for (intpriority = 0; priority <= MAX_PRIORITY; ++priority) { 
-        if (queues[priority].head != NULL) { 
-            QueueItem *item = queues[priority].head; 
+    
+    for (int priority = 0; priority <= MAX_PRIORITY; ++priority) { 
+        if (queue[priority].head != NULL) { 
+            QueueItem *item = queue[priority].head; 
             int tid = item->tid; 
-            queues[priority].head = item->next;
-            if (queues[priority].head == NULL) {
-                queues[priority].tail = NULL;
+            queue[priority].head = item->next;
+            if (queue[priority].head == NULL) {
+                queue[priority].tail = NULL;
             }
             free(item);
             return tid;
@@ -122,7 +134,7 @@ void onThreadReady(int threadId)
 
     _threads[threadId].state = STATE_READY;
 
-    _enqueue(&queue, threadId);
+    _enqueue(&Queues, threadId);
 }
 
 /*
@@ -135,7 +147,7 @@ void onThreadPreempted(int threadId)
 
     _threads[threadId].state = STATE_READY;
 
-    _enqueue(&queue, threadId);
+    _enqueue(&Queues, threadId);
 }
 
 /*
@@ -154,7 +166,7 @@ void onThreadWaiting(int threadId)
 int scheduleNextThread()
 {
     Thread tid;
-    tid.threadId = _dequeue(&queue);
+    tid.threadId = _dequeue(&Queues);
     if (tid.threadId == -1){
         return -1;
     }
